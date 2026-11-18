@@ -1,0 +1,24 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      SERVER_PORT: "8080"
+      SERVER_ADDRESS: 0.0.0.0
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://${RDS_HOST:?Set RDS_HOST in the AWS env file}:5432/clinic_appointments?sslmode=verify-full&sslrootcert=/etc/clinic/certs/global-bundle.pem"
+      SPRING_DATASOURCE_USERNAME: clinic_app
+      SPRING_DATASOURCE_PASSWORD: "${RDS_APP_PASSWORD:?Set RDS_APP_PASSWORD in the AWS env file}"
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_COMPONENTS: always
+    volumes:
+      - type: bind
+        source: ./deploy/aws/certs/global-bundle.pem
+        target: /etc/clinic/certs/global-bundle.pem
+        read_only: true
+        bind:
+          create_host_path: false
+    ports:
+      - "127.0.0.1:8081:8080"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:3000:3000"
